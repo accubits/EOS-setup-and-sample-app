@@ -102,10 +102,12 @@ Smart contracts can only be run by a single account, and a single account can on
    
 ## **Steps for Contract Compilation & Deployment**
     1)Account Creation
-    ```./cleos create account eosio eosio.token <OWNER-KEY> <ACTIVE-KEY>```
+    
+    
+    ```sh ./cleos create account eosio eosio.token <OWNER-KEY> <ACTIVE-KEY>```
     
     Usage
-              ```./cleos create account [OPTIONS] creator name OwnerKey ActiveKey```
+              ```sh ./cleos create account [OPTIONS] creator name OwnerKey ActiveKey```
 
                Positionals:
                      creator TEXT                The name of the account creating the new account
@@ -115,7 +117,7 @@ Smart contracts can only be run by a single account, and a single account can on
                      
     Sample Input & Response
     
-           ```./cleos create account eosio eosio.token  EOS8akHPngGi1nfvR55WqiGrTeCtsSLZRvAGT5LBRdrXDmoqQpSXw EOS5Bi2rhVvVH7JLUwHabEkKkZg4LFB8ifehxoMx8hF6TeZGMWUFQ```
+           ```sh ./cleos create account eosio eosio.token  EOS8akHPngGi1nfvR55WqiGrTeCtsSLZRvAGT5LBRdrXDmoqQpSXw EOS5Bi2rhVvVH7JLUwHabEkKkZg4LFB8ifehxoMx8hF6TeZGMWUFQ```
            
            ```executed transaction: a116a8b0b077132adea1619de2afe1066dbcf68610be0e42fae0c0f7c0240817  200 bytes  45966 us
          eosio <= eosio::newaccount            {"creator":"eosio","name":"eosio.token","owner":{"threshold":1,"keys":[{"key":"EOS8akHPngGi1nfvR55Wq...
@@ -123,21 +125,22 @@ Smart contracts can only be run by a single account, and a single account can on
 
      2) Contract Compilation
 
-        (i) ```cd eos/contract/eosio.token```
-        (ii) ``` eosiocpp -o eosio.token.wast eosio.token.cpp```
+
+        (i) ```sh cd eos/contract/eosio.token```
+        (ii) ```sh eosiocpp -o eosio.token.wast eosio.token.cpp```
         
         #######Note about issues
         
-              ```eosiocpp:command not found```
+              ```sh eosiocpp:command not found```
               
               Solution
               
-              ```cd eos/build```
-              ```sudo make install```
+              ```sh cd eos/build```
+              ```sh sudo make install```
               
               This command will install and shows the location of installed binaries.
               
-              ```-- Up-to-date: /usr/local/eosio/usr/share/eosio/contractsdk/lib/identity_interface.bc
+              ```sh -- Up-to-date: /usr/local/eosio/usr/share/eosio/contractsdk/lib/identity_interface.bc
                  -- Up-to-date: /usr/local/eosio/bin/nodeos
                  -- Up-to-date: /usr/local/eosio/var/log/eosio
                  -- Up-to-date: /usr/local/eosio/var/lib/eosio
@@ -149,14 +152,14 @@ Smart contracts can only be run by a single account, and a single account can on
             
             Add these location to your path as follows.
             
-              ```export PATH=/usr/local/eosio/bins:$PATH
+              ```sh export PATH=/usr/local/eosio/bins:$PATH
                  which eosiocpp
                             /usr/bin/eosio/bin/eosiocpp```
               Then your compilation will create the eosio.token.wasm and eosio.token.abi
 
         3) Contract deployment
 
-                 ```./cleos set contract {account} {path_to_contract_folder} {path_to_wast_file} {path_to_abi_file}```
+                 ```sh ./cleos set contract {account} {path_to_contract_folder} {path_to_wast_file} {path_to_abi_file}```
               Positional Parameters :-
               account TEXT - The account to publish a contract for
               wast-file TEXT - The file containing the contract WAST or WASM
@@ -164,11 +167,11 @@ Smart contracts can only be run by a single account, and a single account can on
             
              
              Sample Input :-
-                  ``` ./cleos set contract eosio.token  ../../../contracts/eosio.token```
+                  ```sh  ./cleos set contract eosio.token  ../../../contracts/eosio.token```
                   
                  Response
                  
-                 ```Reading WAST/WASM from ../../../contracts/eosio.token/eosio.token.wasm...
+                 ```sh Reading WAST/WASM from ../../../contracts/eosio.token/eosio.token.wasm...
 Using already assembled WASM...
 Publishing contract...
 executed transaction: 2400492e9729cd94d8c89703f1cb343643f18def9f605ad0985ef7422ff4bd74  8112 bytes  127802 us
@@ -177,7 +180,7 @@ executed transaction: 2400492e9729cd94d8c89703f1cb343643f18def9f605ad0985ef7422f
 2018-08-01T11:19:39.585 thread-0   main.cpp:391                  print_result   warning: transaction executed locally, but may not be confirmed by the network yet```
       
     4) To verify the contract deployment
-            ```./cleos get code eosio.token```
+            ```sh ./cleos get code eosio.token```
             
             Response :-
             
