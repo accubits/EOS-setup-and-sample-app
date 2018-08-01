@@ -17,6 +17,7 @@ EOS comes with mainly three modules.
 ![N|Solid](https://files.readme.io/8f31cfd-Basic-EOSIO-System-Architecture.png)
 
  **Initial installation**
+ 
 ```sh
 $ git clone https://github.com/eosio/eos --recursive
 $ cd eos
@@ -101,46 +102,49 @@ Smart contracts can only be run by a single account, and a single account can on
    > Every token contract is owned by an owner/issuer account.
    
 ## **Steps for Contract Compilation & Deployment**
-    1)Account Creation
+ 1)Account Creation 
+    
+    `   ./cleos create account eosio eosio.token <OWNER-KEY> <ACTIVE-KEY>   `
     
     
-    ```sh ./cleos create account eosio eosio.token <OWNER-KEY> <ACTIVE-KEY>```
-    
-    Usage
-              ```sh ./cleos create account [OPTIONS] creator name OwnerKey ActiveKey```
+ Usage
+              ` ./cleos create account [OPTIONS] creator name OwnerKey ActiveKey `
 
-               Positionals:
-                     creator TEXT                The name of the account creating the new account
-                     name TEXT                   The name of the new account
-                     OwnerKey TEXT               The owner public key for the new account
-                     ActiveKey TEXT              The active public key for the new account
+ ##### Positionals:
+ > creator TEXT                The name of the account creating the new account 
+ 
+ > name TEXT                   The name of the new account
+ 
+ > OwnerKey TEXT               The owner public key for the new account
+ 
+ > ActiveKey TEXT              The active public key for the new account
                      
-    Sample Input & Response
+Sample Input & Response
     
-           ```sh ./cleos create account eosio eosio.token  EOS8akHPngGi1nfvR55WqiGrTeCtsSLZRvAGT5LBRdrXDmoqQpSXw EOS5Bi2rhVvVH7JLUwHabEkKkZg4LFB8ifehxoMx8hF6TeZGMWUFQ```
+           ` ./cleos create account eosio eosio.token  EOS8akHPngGi1nfvR55WqiGrTeCtsSLZRvAGT5LBRdrXDmoqQpSXw EOS5Bi2rhVvVH7JLUwHabEkKkZg4LFB8ifehxoMx8hF6TeZGMWUFQ `
            
-           ```executed transaction: a116a8b0b077132adea1619de2afe1066dbcf68610be0e42fae0c0f7c0240817  200 bytes  45966 us
+           ` executed transaction: a116a8b0b077132adea1619de2afe1066dbcf68610be0e42fae0c0f7c0240817  200 bytes  45966 us
          eosio <= eosio::newaccount            {"creator":"eosio","name":"eosio.token","owner":{"threshold":1,"keys":[{"key":"EOS8akHPngGi1nfvR55Wq...
-2018-08-01T06:01:01.269 thread-0   main.cpp:391                  print_result   warning: transaction executed locally, but may not be confirmed by the network yet```
+     2018-08-01T06:01:01.269 thread-0   main.cpp:391                  print_result   warning: transaction executed locally, but may not be confirmed by the network yet `
 
-     2) Contract Compilation
+2) Contract Compilation
 
 
-        (i) ```sh cd eos/contract/eosio.token```
-        (ii) ```sh eosiocpp -o eosio.token.wast eosio.token.cpp```
+        (i) ` cd eos/contract/eosio.token `
+        (ii) ` eosiocpp -o eosio.token.wast eosio.token.cpp `
         
-        #######Note about issues
+ #######Note about issues
         
-              ```sh eosiocpp:command not found```
+              ` eosiocpp:command not found `
               
-              Solution
+  Solution
               
-              ```sh cd eos/build```
-              ```sh sudo make install```
+              ` sh cd eos/build `
+              ` sh sudo make install `
               
-              This command will install and shows the location of installed binaries.
+ This command will install and shows the location of installed binaries.
               
-              ```sh -- Up-to-date: /usr/local/eosio/usr/share/eosio/contractsdk/lib/identity_interface.bc
+              ` sh -- Up-to-date: /usr/local/eosio/usr/share/eosio/contractsdk/lib/identity_interface.bc
                  -- Up-to-date: /usr/local/eosio/bin/nodeos
                  -- Up-to-date: /usr/local/eosio/var/log/eosio
                  -- Up-to-date: /usr/local/eosio/var/lib/eosio
@@ -148,43 +152,45 @@ Smart contracts can only be run by a single account, and a single account can on
                  -- Up-to-date: /usr/local/eosio/bin/keosd
                  -- Up-to-date: /usr/local/eosio/bin/eosio-launcher
                  -- Up-to-date: /usr/local/eosio/bin/eosio-abigen
-                 -- Up-to-date: /usr/local/eosio/bin/eosiocpp```
+                 -- Up-to-date: /usr/local/eosio/bin/eosiocpp `
             
-            Add these location to your path as follows.
+ Add these location to your path as follows.
             
-              ```sh export PATH=/usr/local/eosio/bins:$PATH
+              ` export PATH=/usr/local/eosio/bins:$PATH
                  which eosiocpp
                             /usr/bin/eosio/bin/eosiocpp```
-              Then your compilation will create the eosio.token.wasm and eosio.token.abi
+Then your compilation will create the eosio.token.wasm and eosio.token.abi
 
-        3) Contract deployment
+3) Contract deployment
 
-                 ```sh ./cleos set contract {account} {path_to_contract_folder} {path_to_wast_file} {path_to_abi_file}```
-              Positional Parameters :-
-              account TEXT - The account to publish a contract for
-              wast-file TEXT - The file containing the contract WAST or WASM
-              abi-file TEXT - The ABI for the contract
+                 ` sh ./cleos set contract {account} {path_to_contract_folder} {path_to_wast_file} {path_to_abi_file} `
+   ##### Positional Parameters :-
+   > account TEXT - The account to publish a contract for
+   
+   > wast-file TEXT - The file containing the contract WAST or WASM
+   
+   > abi-file TEXT - The ABI for the contract
             
              
-             Sample Input :-
-                  ```sh  ./cleos set contract eosio.token  ../../../contracts/eosio.token```
+    Sample Input :-
+                  `  ./cleos set contract eosio.token  ../../../contracts/eosio.token `
                   
-                 Response
+    Response
                  
-                 ```sh Reading WAST/WASM from ../../../contracts/eosio.token/eosio.token.wasm...
-Using already assembled WASM...
-Publishing contract...
-executed transaction: 2400492e9729cd94d8c89703f1cb343643f18def9f605ad0985ef7422ff4bd74  8112 bytes  127802 us
+                 ` Reading WAST/WASM from ../../../contracts/eosio.token/eosio.token.wasm...
+                   Using already assembled WASM...
+                   Publishing contract...
+                   executed transaction: 2400492e9729cd94d8c89703f1cb343643f18def9f605ad0985ef7422ff4bd74  8112 bytes  127802 us
        eosio <= eosio::setcode               {"account":"eosio.token","vmtype":0,"vmversion":0,"code":"0061736d01000000017e1560037f7e7f0060057f7e...
        eosio <= eosio::setabi                {"account":"eosio.token","abi":"0e656f73696f3a3a6162692f312e30010c6163636f756e745f6e616d65046e616d65...
-2018-08-01T11:19:39.585 thread-0   main.cpp:391                  print_result   warning: transaction executed locally, but may not be confirmed by the network yet```
+                     2018-08-01T11:19:39.585 thread-0   main.cpp:391                  print_result   warning: transaction executed locally, but may not be confirmed by the network yet```
       
-    4) To verify the contract deployment
-            ```sh ./cleos get code eosio.token```
+  4) To verify the contract deployment
+            ` ./cleos get code eosio.token`
             
-            Response :-
+   Response :-
             
-            ```code hash: 9210637cb6abf6ac8e887cb43c75ca3f86713c9b3b668b0ec63b6e39183b54fd```
+            ` code hash: 9210637cb6abf6ac8e887cb43c75ca3f86713c9b3b668b0ec63b6e39183b54fd `
      
      
                  
