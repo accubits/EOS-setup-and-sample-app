@@ -83,7 +83,26 @@ Sample Response
 ```sh
 ./cleos wallet import ``<privatekey>``
 ```
-#### **Sample App**
+# **Introduction about EOSIO Smart Contract**
+
+   > An EOSIO Smart Contract is software registered on the blockchain and executed on EOSIO nodes, that implements the semantics of a "contract" whose ledger of action requests are being stored on the blockchain.
+   > The Smart Contract defines the interface (actions, parameters, data structures) and the code that implements the interface. 
+   >  The code is compiled into a canonical bytecode format that nodes can retrieve and execute. 
+   >  The blockchain stores the transactions of the contract. 
+   >  Every eosio smart contract belongs to a single eosio account.
+   > Performing an action to a contract requires the authorization of at least one account. 
+   > An account can be made of a single, or many, individuals set up in a permission based configuration. 
+Smart contracts can only be run by a single account, and a single account can only have a single smart contract.
+   > Note :-
+   Best practice - Use the same (lowercase) name for both the account and contract.
+
+## **The eosio.token contract explanation**
+   > Allows the creation/transfer of tokens.
+   > Every token contract is owned by an owner/issuer account.
+   
+## ** Steps for Contract Compilation & Deployment**
+
+#### **EOSIO Token SmartContract Explanation**
 ###### ***Coming Soon***
 
 References: [EOSIO](https://developers.eos.io/eosio-nodeos/docs)
