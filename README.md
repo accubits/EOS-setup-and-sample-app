@@ -195,7 +195,116 @@ Then your compilation will create the eosio.token.wasm and eosio.token.abi
      
                  
 #### **EOSIO Token SmartContract Interaction**
-###### ***Coming Soon***
+1) Create Function
+
+ Notes:-
+ Push Action  :- Push a transaction with a single action
+            
+ Positionals
+            
+  >contract Type: Text - The account providing the contract to execute
+  
+  >action Type: Text - The action to execute on the contract
+  
+  >data Type: Text - The arguments to the contract
+            
+ ` ./cleos push action eosio.token create '{"issuer":"eosio.token","maximum_supply":"1000000.0000 TKN","can_freeze":"0","can_recall":"0","can_whitelist":"0"}' -p eosio.token`
+Issues :-  `Error 3080006: Transaction took too long`
+
+Solution:- append -x after the set contract command
+
+  > -x,--expiration :-  set the time in seconds before a transaction expires, defaults to 30s
+           
+           
+Updated Command :-
+           `./cleos push action eosio.token create '{"issuer":"eosio.token","maximum_supply":"1000000.0000 TKN","can_freeze":"0","can_recall":"0","can_whitelist":"0"}' -p eosio.token -x 600`
+           
+Response:-
+       `executed transaction: 8aafe7154c42bfe600a33a6b0ce088d01c846a658e0872264c59ae455bbd659c  120 bytes  917 us`
+        `#   eosio.token <= eosio.token::create          {"issuer":"eosio.token","maximum_supply":"1000000.0000 TKN"}
+2018-08-02T05:02:51.930 thread-0   main.cpp:391                  print_result   warning: transaction executed locally, but may    not be confirmed by the network yet`
+
+2) Token Issue Function
+
+        ` ./cleos push action eosio.token issue '{"to":"eosio.token","quantity":"1000.0000 TKN","memo":""}' -p eosio.token`
+        
+   Response :-
+   
+       `  executed transaction: 389b45416b54b4ec6a5f5b1135f276f0801486835f914fc14a8aa68c5efd605e  120 bytes  882 us
+          #   eosio.token <= eosio.token::issue           {"to":"eosio.token","quantity":"1000.0000 TKN","memo":""}
+          warning: transaction executed locally, but may not be confirmed by the network yet    ] `
+          
+          
+3) Initial Balance Verification
+
+Notes :-
+
+get table :-  Retrieves the contents of a db table
+
+Positionals :-
+
+>contract TEXT - The contract who owns the table
+
+>scope TEXT - The scope within the contract in which the table is found 
+
+>table TEXT - The name of the table as specified by the contract abi
+
+
+         ` ./cleos get table eosio.token eosio.token accounts`
+         
+Response :-
+          `{
+                      "rows": [{
+                                  "balance": "1000.0000 TKN"
+                                  }
+                        ],
+                      "more": false
+                 }`
+                 
+
+4) Token Transfer
+
+Transfer tokens from “eosio.token” to “eosio”
+        
+         ` ./cleos push action eosio.token transfer '{"from":"eosio.token","to":"eosio","quantity":"20.0000 TKN","memo":"my first transfer"}' -p eosio.token`
+         
+Response :-
+
+         `  executed transaction: 6b74bfaff1e613c2185fcc45c2487c5fe2a0abeb0f5243779adb9f2881cc46f0  144 bytes  1336 us
+           #   eosio.token <= eosio.token::transfer        {"from":"eosio.token","to":"eosio","quantity":"20.0000 TKN","memo":"my first transfer"}
+           #         eosio <= eosio.token::transfer        {"from":"eosio.token","to":"eosio","quantity":"20.0000 TKN","memo":"my first transfer"}
+          warning: transaction executed locally, but may not be confirmed by the network yet    ] `
+
+5) Balance checks in two accounts
+
+a)Account 1
+      `./cleos get table eosio.token eosio accounts`
+      
+   Response :-
+           
+           `{   "rows": [{
+                           "balance": "20.0000 TKN"
+                          }
+                        ],
+                              more": false
+                       },
+             }`
+             
+ b)Account 2
+         ` ./cleos get table eosio.token eosio.token accounts`
+         
+   Response :-
+   
+         `{   "rows": [{
+                           "balance": "980.0000 TKN"
+                          }
+                        ],
+                              more": false
+                       },
+             }'
+         
+
+      
 #### **EOSIO Token SmartContract Explanation**
 ###### ***Coming Soon***
 
