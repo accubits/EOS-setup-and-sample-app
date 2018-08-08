@@ -306,9 +306,264 @@ a)Account 1
 
       
 #### **EOSIO Token SmartContract Explanation**
-###### ***Coming Soon***
+Contract EOSIO.token
+
+1)  .hpp file defines the contract class,actions,tables.// HPP is a file extension for a header file file format.
+2)  .cpp file implements the action logic.
+
+.hpp File Explanation:-
+
+ Stage 1 :-  	 	 	
+                      
+                     #pragma once
+                     #include <eosiolib/asset.hpp>        ---> Defines API for mananging Assests
+                     #include <eosiolib/eosio.hpp>        --->  Defines print,contract  
+                     #include <string>
+
+                     namespace eosiosystem {
+                        class system_contract;
+                     }
+
+                      namespace eosio {
+
+                            using std::string;
+
+                           }    //namespace eosio
+                           
+Stage 2 :-
+//constructor and actions are defined as public members
+
+//constructor takes an account name (which will be the account that the contract is deployed on, aka eosio.token) and sets it to the contract variable. 
+
+//The  class is inheriting from the ‘eosio::contract’.
+
+                             
+                             class token : public contract {           
+                   
+                                     public:
+                                          //constructor
+                                          token( account_name self ):contract(self){}
+                                          //action
+                                          void create( account_name issuer,asset maximum_supply);
+                                          //action
+                                          void issue( account_name to, asset quantity, string memo );
+                                          //action
+                                          void transfer( account_name from,
+                                                         account_name to,
+                                                         asset        quantity,
+                                                         string       memo );
+    
+   
+                                         inline asset get_supply( symbol_name sym )const;
+       
+                                         inline asset get_balance( account_name owner, symbol_name sym )const;
+
+                                         Private:
+                                         //table
+                                        //accounts table is made up of different account objects each holding the balance for a                  different token
+                                        struct account {
+                                              asset    balance;
+
+                                              uint64_t primary_key()const { return balance.symbol.name(); }
+                                       };
+                                       //table
+                                       //The stat table is made up of currency_stats objects (defined by struct currency_stats) that holds a supply, a max_supply, and an issuer.
+                                       struct currency_stats {
+                                               asset          supply;
+                                               asset          max_supply;
+                                               account_name   issuer;
+
+                                               uint64_t primary_key()const { return supply.symbol.name(); }
+                                     };
+
+                                    //TABLE  :-
+                                        this contract will hold data into two different scopes. The accounts table is scoped to an eosio account, and the stat table is scoped to a token symbol name.
+                                    typedef eosio::multi_index<N(accounts), account> accounts;
+                                    typedef eosio::multi_index<N(stat), currency_stats> stats;
+
+                                    //`code` is the name of the account which has write permission and the `scope` is the account where the data gets stored.
+
+                                    void sub_balance( account_name owner, asset value );
+                                    void add_balance( account_name owner, asset value, account_name ram_payer );
+
+                                    public:
+                                          struct transfer_args {
+                                                   account_name  from;
+                                                   account_name  to;
+                                                   asset         quantity;
+                                                   string        memo;
+                                          };
+                                  };
+
+                                  asset token::get_supply( symbol_name sym )const
+                                   {
+                                               stats statstable( _self, sym );
+                                               const auto& st = statstable.get( sym );
+                                               return st.supply;
+                                  }
+
+                                 asset token::get_balance( account_name owner, symbol_name sym )const
+                                 {
+                                          accounts accountstable( _self, owner );
+                                          const auto& ac = accountstable.get( sym );
+                                          return ac.balance;
+                                }
+
+
+Actions :  Implemented in cpp file :-
+
+        
+Create   -create a new token
+              Parameters :- Issuer,maximum supply
+              Issuer is the only one to increase the token.
+              Permissioned operations requires  using the -p flag
+
+                                  /**
+                                              *  @file
+                                              *  @copyright defined in eos/LICENSE.txt
+                                  */
+
+                                 #include "eosio.token.hpp"
+
+                                 namespace eosio {
+
+                                           void token::create( account_name issuer,
+                                           asset        maximum_supply )
+                                           {
+                                                 require_auth( _self );
+                                                 //extract the symbol for the maximum_supply asset
+                                                 auto sym = maximum_supply.symbol;
+                                                 eosio_assert( sym.is_valid(), "invalid symbol name" );
+                                                 eosio_assert( maximum_supply.is_valid(), "invalid supply");
+                                                 eosio_assert( maximum_supply.amount > 0, "max-supply must be positive");
+                                                 // stat table called statstable is constructed using the symbols name (token symbol) as its scope
+                                                 stats statstable( _self, sym.name() );
+                                                // checks whether token already exists or not.
+                                                 auto existing = statstable.find( sym.name() );
+                                                 eosio_assert( existing == statstable.end(), "token with symbol already exists" );
+                                                 //The first parameter _self in the emplace function means that this contracts account ‘eosio.token’ will pay for the staked storage
+                                                statstable.emplace( _self, [&]( auto& s ) {
+                                                       s.supply.symbol = maximum_supply.symbol;
+                                                       s.max_supply    = maximum_supply;
+                                                       s.issuer        = issuer;
+                                                });
+                                               //supply's symbol is used as the key for locating the table row
+                                               }
+
+
+                                              //params :- tokenReceiver,token Quantity,memo
+
+                                              void token::issue( account_name to, asset quantity, string memo )
+                                              {
+                                                   //Extract the token Symbol
+                                                   auto sym = quantity.symbol;
+                                                   eosio_assert( sym.is_valid(), "invalid symbol name" );
+                                                   eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+
+                                                    //create the stat table using the symbol name as the scope
+                                                     auto sym_name = sym.name();
+                                                     stats statstable( _self, sym_name );
+                                                     auto existing = statstable.find( sym_name );
+                                                     eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
+                                                     //st is declared and set to the actual object that the existing iterator is pointing to.
+                                                     const auto& st = *existing;
+  
+                                                     //The issuer for the created token is required to sign the transaction
+                                                     require_auth( st.issuer );
+                                                     eosio_assert( quantity.is_valid(), "invalid quantity" );
+                                                     eosio_assert( quantity.amount > 0, "must issue positive quantity" );
+
+                                                     eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+                                                     eosio_assert( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+                                                     //The currency_stats st for our existing token is modified and the issued quantity is added to the supply
+                                                     statstable.modify( st, 0, [&]( auto& s ) {
+                                                              s.supply += quantity;
+                                                      });
+
+                                                     //The issuer will also have this supply added to their balance.
+                                                     add_balance( st.issuer, quantity, st.issuer );
+
+                                                     if( to != st.issuer ) {
+                                                           //transfer function is called via the SEND_INLINE_ACTION() macro which will transfer the funds.
+
+                                                         //     this                    the contract code the action belongs to
+                                                                transfer the anme of the action
+                                                                {st.issuer, N(active)} the permissions required for the action
+                                                                {st.issuer, to, quantity, memo} the arguments for the action itself
+
+                                                                SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
+    }
+                                                         }
+                                                       //transfer function
+
+                                                       //from and to accounts. The symbol is extracted from the quantity and used to get the currency_stats for the token.
+                                                      void token::transfer( account_name from,
+                                                                account_name to,
+                                                                asset        quantity,
+                                                                string       memo )
+                                                       {
+                                                            eosio_assert( from != to, "cannot transfer to self" );
+                                                            require_auth( from );
+                                                            eosio_assert( is_account( to ), "to account does not exist");
+                                                            auto sym = quantity.symbol.name();
+                                                            stats statstable( _self, sym );
+                                                            const auto& st = statstable.get( sym );
+
+                                                           // notify both the sender and receiver about action
+                                                           require_recipient( from );  
+                                                           require_recipient( to );
+
+                                                           eosio_assert( quantity.is_valid(), "invalid quantity" );
+                                                           eosio_assert( quantity.amount > 0, "must transfer positive quantity" );
+                                                           eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+                                                           eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+
+
+                                                           sub_balance( from, quantity );
+                                                           add_balance( to, quantity, from );
+                                                          }
+
+                                                         void token::sub_balance( account_name owner, asset value ) {
+                                                                accounts from_acnts( _self, owner );
+
+                                                                const auto& from = from_acnts.get( value.symbol.name(), "no balance object found" );
+                                                                eosio_assert( from.balance.amount >= value.amount, "overdrawn balance" );
+
+
+                                                                      if( from.balance.amount == value.amount ) {
+                                                                                  from_acnts.erase( from );
+                                                                      } else {
+                                                                                 from_acnts.modify( from, owner, [&]( auto& a ) {
+                                                                                          a.balance -= value;
+                                                                               });
+                                                                       }
+                                                                     }
+
+                                                                  void token::add_balance( account_name owner, asset value, account_name ram_payer )
+                                                                   {
+                                                                        accounts to_acnts( _self, owner );
+                                                                        auto to = to_acnts.find( value.symbol.name() );
+                                                                        if( to == to_acnts.end() ) {
+                                                                             to_acnts.emplace( ram_payer, [&]( auto& a ){
+                                                                             a.balance = value;
+                                                                       });
+                                                                       } else {
+                                                                            to_acnts.modify( to, 0, [&]( auto& a ) {
+                                                                                 a.balance += value;
+                                                                           });
+                                                                       }
+                                                                        }
+
+                                                                  } /// namespace eosio
+
+                                                                   EOSIO_ABI( eosio::token, (create)(issue)(transfer) )
+
+
+
 
 References: [EOSIO](https://developers.eos.io/eosio-nodeos/docs)
+
+            [EOSIO Token Contract Reference](https://medium.com/coinmonks/understanding-the-eosio-token-contract-87466b9fdca9)
 
 Contributors:
 - [Crissi](https://github.com/crissiaccubits)
